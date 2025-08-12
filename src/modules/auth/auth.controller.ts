@@ -10,6 +10,11 @@ import { UserRole } from './entities/user.entity';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  @Post('setup-admin')
+  async setupAdmin(@Body() registerDto: RegisterDto) {
+    return this.authService.setupAdmin(registerDto);
+  }
+
   @Post('register')
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)

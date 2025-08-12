@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from './entities/user.entity';
+import { User, UserRole } from './entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -15,8 +15,31 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
+  async setupAdmin(registerDto: RegisterDto): Promise<User> {
+    const adminCount = await this.usersRepository.count({ where: { role: UserRole.ADMIN } });
+    if (adminCount > 0) {
+      throw new BadRequestException('An admin user already exists');
+    }
+
+    const { email, password, name } = registerDto;
+    const existingUser = await this.usersRepository.findOne({ where: { email } });
+    if (existingUser) {
+      throw new BadRequestException('Email already exists');
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = this.usersRepository.create({
+      email,
+      password: hashedPassword,
+      name,
+      role: UserRole.ADMIN,
+    });
+
+    return this.usersRepository.save(user);
+  }
+
   async register(registerDto: RegisterDto): Promise<User> {
-    const { email, password, name, role } = registerDto;
+    const { email, password, name, role = UserRole.MEMBER } = registerDto;
     
     const existingUser = await this.usersRepository.findOne({ where: { email } });
     if (existingUser) {
