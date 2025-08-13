@@ -1,17 +1,17 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AuthService } from './auth.service';
-import { AuthController } from './auth.controller';
-import { User } from '@common/entities/user.entity';
+import { TaskService } from './task.service';
+import { TaskController } from './task.controller';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from '@common/strategies/jwt.strategy';
 import { RolesGuard } from '@common/guards/roles.guard';
+import { Task } from './entities/task.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([Task]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -23,8 +23,8 @@ import { RolesGuard } from '@common/guards/roles.guard';
     }),
     ConfigModule,
   ],
-  controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, RolesGuard],
-  exports: [AuthService, JwtStrategy, RolesGuard],
+  controllers: [TaskController],
+  providers: [TaskService, JwtStrategy, RolesGuard],
+  exports: [TaskService, JwtStrategy, RolesGuard],
 })
-export class AuthModule {}
+export class TaskModule {}
