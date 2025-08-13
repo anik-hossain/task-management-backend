@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User, UserRole } from './entities/user.entity';
+import { User, UserRole } from '../../common/entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -38,7 +38,7 @@ export class AuthService {
     return this.usersRepository.save(user);
   }
 
-  async register(registerDto: RegisterDto): Promise<User> {
+  async register(registerDto: RegisterDto): Promise<{ accessToken: string, user: User }> {
     const { email, password, name } = registerDto;
     
     const existingUser = await this.usersRepository.findOne({ where: { email } });
@@ -54,7 +54,11 @@ export class AuthService {
       role: UserRole.MEMBER,
     });
 
-    return this.usersRepository.save(user);
+    this.usersRepository.save(user);
+
+    const payload = { sub: user.id, email: user.email, role: user.role };
+    const accessToken = this.jwtService.sign(payload);
+    return { accessToken, user: { id: user.id, email: user.email, name: user.name, role: user.role } };
   }
 
   async login(loginDto: LoginDto): Promise<{ accessToken: string, user: User }> {
