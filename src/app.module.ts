@@ -2,7 +2,8 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './modules/auth/auth.module';
-import { TaskModule } from './modules/task/task.module';
+import { TaskModule } from './modules/tasks/task.module';
+import { UserController } from './modules/users/user.controller';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { TaskModule } from './modules/task/task.module';
     // Modules
     AuthModule,
     TaskModule,
+    UserController
   ],
 })
 export class AppModule {}

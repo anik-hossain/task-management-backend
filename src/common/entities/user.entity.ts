@@ -1,4 +1,4 @@
-import { Task } from '@/modules/task/entities/task.entity';
+import { Task } from '@/modules/tasks/entities/task.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
