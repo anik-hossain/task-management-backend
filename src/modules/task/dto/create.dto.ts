@@ -1,6 +1,27 @@
-import { IsEmail, IsNotEmpty, MinLength, IsEnum, IsOptional } from 'class-validator';
+import { IsString, IsEnum, IsDateString, IsOptional, IsArray, ArrayNotEmpty, IsInt } from 'class-validator';
+import { Priority } from '../entities/task.entity';
 
-export class CreateDto {
-  @IsNotEmpty()
+export class CreateTaskDto {
+  @IsString()
   title: string;
+
+  description?: string;
+
+  @IsArray()
+  @ArrayNotEmpty()
+  @IsInt({ each: true })
+  assigneeIds: number[]; // multiple user IDs
+
+  @IsEnum(Priority)
+  priority: Priority;
+
+  @IsDateString()
+  start_date: string;
+
+  @IsDateString()
+  end_date: string;
+
+  @IsOptional()
+  @IsString()
+  dependencies?: string;
 }

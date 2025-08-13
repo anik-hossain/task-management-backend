@@ -8,10 +8,11 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from '@common/strategies/jwt.strategy';
 import { RolesGuard } from '@common/guards/roles.guard';
 import { Task } from './entities/task.entity';
+import { User } from '@/common/entities/user.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Task]),
+    TypeOrmModule.forFeature([Task, User]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],

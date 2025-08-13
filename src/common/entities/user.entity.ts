@@ -31,7 +31,7 @@ export class User {
   @Column({ type: 'enum', enum: UserRole, default: UserRole.MEMBER })
   role: UserRole;
 
-  @OneToMany(() => Task, (task) => task.assign)
+  @OneToMany(() => Task, (task) => task.assignees)
   tasks?: Task[];
 
   @CreateDateColumn({ name: 'created_at' })
