@@ -39,7 +39,7 @@ export class AuthService {
   }
 
   async register(registerDto: RegisterDto): Promise<User> {
-    const { email, password, name, role = UserRole.MEMBER } = registerDto;
+    const { email, password, name } = registerDto;
     
     const existingUser = await this.usersRepository.findOne({ where: { email } });
     if (existingUser) {
@@ -51,13 +51,13 @@ export class AuthService {
       email,
       password: hashedPassword,
       name,
-      role,
+      role: UserRole.MEMBER,
     });
 
     return this.usersRepository.save(user);
   }
 
-  async login(loginDto: LoginDto): Promise<{ accessToken: string }> {
+  async login(loginDto: LoginDto): Promise<{ accessToken: string, user: User }> {
     const { email, password } = loginDto;
     const user = await this.usersRepository.findOne({ where: { email } });
 
@@ -67,7 +67,7 @@ export class AuthService {
 
     const payload = { sub: user.id, email: user.email, role: user.role };
     const accessToken = this.jwtService.sign(payload);
-    return { accessToken };
+    return { accessToken, user: { id: user.id, email: user.email, name: user.name, role: user.role } };
   }
 
   async findUserById(id: number): Promise<User> {
@@ -75,6 +75,12 @@ export class AuthService {
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
+    return user;
+  }
+
+async getLoggedInUser(userId: number): Promise<User> {
+    const user = await this.usersRepository.findOne({ where: { id: userId } });
+    if (!user) throw new NotFoundException('User not found');
     return user;
   }
 }
