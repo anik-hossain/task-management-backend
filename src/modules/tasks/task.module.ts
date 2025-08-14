@@ -9,6 +9,7 @@ import { JwtStrategy } from '@common/strategies/jwt.strategy';
 import { RolesGuard } from '@common/guards/roles.guard';
 import { Task } from './entities/task.entity';
 import { User } from '@/common/entities/user.entity';
+import { TasksGateway } from './tasks.gateway';
 
 @Module({
   imports: [
@@ -25,7 +26,7 @@ import { User } from '@/common/entities/user.entity';
     ConfigModule,
   ],
   controllers: [TaskController],
-  providers: [TaskService, JwtStrategy, RolesGuard],
+  providers: [TaskService, JwtStrategy, RolesGuard, TasksGateway],
   exports: [TaskService, JwtStrategy, RolesGuard],
 })
 export class TaskModule {}

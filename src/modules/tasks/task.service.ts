@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { CreateTaskDto } from './dto/create.dto';
 import { Task } from './entities/task.entity';
 import { User } from '@/common/entities/user.entity';
+import { TasksGateway } from './tasks.gateway';
 
 @Injectable()
 export class TaskService {
@@ -12,6 +13,7 @@ export class TaskService {
     private tasksRepository: Repository<Task>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    private readonly tasksGateway: TasksGateway
   ) { }
 
   async index(user: User): Promise<Task[]> {
@@ -73,6 +75,9 @@ export class TaskService {
     }
 
     task.status = newStatus as any;
-    return this.tasksRepository.save(task);
+    const updatedTask = await this.tasksRepository.save(task);
+
+    this.tasksGateway.notifyTaskUpdate(taskId, newStatus);
+    return updatedTask;
   }
 }
