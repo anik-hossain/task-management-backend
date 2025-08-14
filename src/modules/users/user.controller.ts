@@ -1,15 +1,15 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
-import { TaskService } from './user.service';
+import { UserService } from './user.service';
 import { RolesGuard } from '@common/guards/roles.guard';
 import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
 
 @Controller('users')
 export class UserController {
-  constructor(private taskService: TaskService) {}
+  constructor(private userService: UserService) {}
 
   @Get()
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(JwtAuthGuard)
   async tasks() {
-    return this.taskService.index();
+    return this.userService.index();
   }
 }

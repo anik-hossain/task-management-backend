@@ -10,7 +10,7 @@ export class CreateTaskDto {
   @IsArray()
   @ArrayNotEmpty()
   @IsInt({ each: true })
-  assigneeIds: number[]; // multiple user IDs
+  assignee: number[];
 
   @IsEnum(Priority)
   priority: Priority;

@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { TaskService } from './user.service';
+import { UserService } from './user.service';
 import { UserController } from './user.controller';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -24,7 +24,7 @@ import { User } from '@/common/entities/user.entity';
     ConfigModule,
   ],
   controllers: [UserController],
-  providers: [TaskService, JwtStrategy, RolesGuard],
-  exports: [TaskService, JwtStrategy, RolesGuard],
+  providers: [UserService, JwtStrategy, RolesGuard],
+  exports: [UserService, JwtStrategy, RolesGuard],
 })
-export class TaskModule {}
+export class UserModule {}

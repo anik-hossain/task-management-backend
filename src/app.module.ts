@@ -3,7 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './modules/auth/auth.module';
 import { TaskModule } from './modules/tasks/task.module';
-import { UserController } from './modules/users/user.controller';
+import { UserModule } from './modules/users/user.module';
 
 @Module({
   imports: [
@@ -24,7 +24,7 @@ import { UserController } from './modules/users/user.controller';
     // Modules
     AuthModule,
     TaskModule,
-    UserController
+    UserModule
   ],
 })
 export class AppModule {}

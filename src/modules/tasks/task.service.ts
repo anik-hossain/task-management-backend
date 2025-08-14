@@ -13,11 +13,16 @@ export class TaskService {
      @InjectRepository(User)
     private userRepository: Repository<User>,
   ) { }
+
+  async index(): Promise<Task[]> {
+    return this.tasksRepository.find({ relations: ['assignees'] });
+  }
+
   async create(createDTO: CreateTaskDto): Promise<Task> {
-    const assignees = await this.userRepository.findByIds(createDTO.assigneeIds);
+    const assignees = await this.userRepository.findByIds(createDTO.assignee);
     const task = this.tasksRepository.create({
       ...createDTO,
-      assignees, // these are full User entities
+      assignees,
     });
 
     return this.tasksRepository.save(task);
