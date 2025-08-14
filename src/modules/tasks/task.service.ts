@@ -45,4 +45,34 @@ export class TaskService {
     }
     return task;
   }
+
+   private allowedTransitions: Record<string, Record<string, string[]>> = {
+    admin: {
+      pending: ['in-progress', 'completed'],
+      'in-progress': ['pending', 'completed'],
+      completed: ['pending', 'in-progress'],
+    },
+    manager: {
+      pending: ['in-progress', 'completed'],
+      'in-progress': ['pending', 'completed'],
+      completed: ['pending', 'in-progress'],
+    },
+    member: {
+      pending: ['in-progress'],
+      'in-progress': ['completed'],
+      completed: [],
+    },
+  };
+
+  async updateStatus(user: User, taskId: number, newStatus: string): Promise<Task> {
+    const task = await this.findById(taskId);
+
+    const allowed = this.allowedTransitions[user.role]?.[task.status] || [];
+    if (!allowed.includes(newStatus)) {
+      throw new BadRequestException('You are not allowed to change to this status');
+    }
+
+    task.status = newStatus as any;
+    return this.tasksRepository.save(task);
+  }
 }

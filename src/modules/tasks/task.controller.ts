@@ -1,15 +1,16 @@
-import { Controller, Post, Get, Body, UseGuards, Param, Req } from '@nestjs/common';
+import { Controller, Post, Get, Body, UseGuards, Param, Req, Patch } from '@nestjs/common';
 import { TaskService } from './task.service';
 import { CreateTaskDto } from './dto/create.dto';
 import { RolesGuard } from '@common/guards/roles.guard';
 import { UserRole } from '@common/entities/user.entity';
 import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
+import { UpdateStatusDto } from './dto/UpdateStatusDto';
 
 @Controller('tasks')
 export class TaskController {
   constructor(private taskService: TaskService) {}
 
-   @Get()
+  @Get()
   @UseGuards(JwtAuthGuard)
   async index(@Req() req) {
     // Pass the logged-in user to the service
@@ -26,5 +27,15 @@ export class TaskController {
   @UseGuards(JwtAuthGuard)
   async findById(@Param('id') id: number) {
     return this.taskService.findById(id);
+  }
+
+  @Patch(':id/status')
+  @UseGuards(JwtAuthGuard)
+  async updateStatus(
+    @Req() req,
+    @Param('id') id: string,
+    @Body() dto: UpdateStatusDto
+  ) {
+    return this.taskService.updateStatus(req.user, Number(id), dto.status);
   }
 }
