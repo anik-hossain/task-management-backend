@@ -27,4 +27,13 @@ export class TaskService {
 
     return this.tasksRepository.save(task);
   }
+
+  // get task by id
+  async findById(id: number): Promise<Task> {
+    const task = await this.tasksRepository.findOne({where: { id }, relations: ['assignees']});
+    if (!task) {
+      throw new NotFoundException(`Task with id ${id} not found`);
+    }
+    return task;
+  }
 }

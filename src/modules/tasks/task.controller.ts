@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, UseGuards } from '@nestjs/common';
+import { Controller, Post, Get, Body, UseGuards, Param } from '@nestjs/common';
 import { TaskService } from './task.service';
 import { CreateTaskDto } from './dto/create.dto';
 import { RolesGuard } from '@common/guards/roles.guard';
@@ -19,5 +19,11 @@ export class TaskController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   async tasks(@Body() taskDto: CreateTaskDto) {
     return this.taskService.create(taskDto);
+  }
+
+  @Get(':id')
+  @UseGuards(JwtAuthGuard)
+  async findById(@Param('id') id: number) {
+    return this.taskService.findById(id);
   }
 }

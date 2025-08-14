@@ -15,6 +15,12 @@ export enum Priority {
   HIGH = 'high',
 }
 
+export enum TaskStatus {
+  PENDING = 'pending',
+  IN_PROGRESS = 'in-progress',
+  COMPLETED = 'completed',
+}
+
 @Entity()
 export class Task {
   @PrimaryGeneratedColumn()
@@ -29,6 +35,9 @@ export class Task {
   @ManyToMany(() => User, (user) => user.tasks)
   @JoinTable()
   assignees: User[];
+
+  @Column({ type: 'enum', enum: TaskStatus, default: TaskStatus.PENDING })
+  status: TaskStatus;
 
   @Column({ type: 'enum', enum: Priority, default: Priority.LOW })
   priority: Priority;
