@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, UseGuards, Param } from '@nestjs/common';
+import { Controller, Post, Get, Body, UseGuards, Param, Req } from '@nestjs/common';
 import { TaskService } from './task.service';
 import { CreateTaskDto } from './dto/create.dto';
 import { RolesGuard } from '@common/guards/roles.guard';
@@ -9,10 +9,11 @@ import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
 export class TaskController {
   constructor(private taskService: TaskService) {}
 
-  @Get()
+   @Get()
   @UseGuards(JwtAuthGuard)
-  async index() {
-    return this.taskService.index();
+  async index(@Req() req) {
+    // Pass the logged-in user to the service
+    return this.taskService.index(req.user);
   }
 
   @Post()
