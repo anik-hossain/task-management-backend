@@ -18,6 +18,7 @@
       "@/*": ["*"],
       "@common/*": ["common/*"],
       "@auth/*": ["modules/auth/*"],
+      "@notifications/*": ["modules/notifications/*"],
     },
     "incremental": true,
     "skipLibCheck": true,

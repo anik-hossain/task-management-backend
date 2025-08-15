@@ -1,4 +1,6 @@
+import { Notification } from '@/modules/notifications/entities/notification.entity';
 import { Task } from '@/modules/tasks/entities/task.entity';
+
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -33,6 +35,9 @@ export class User {
 
   @OneToMany(() => Task, (task) => task.assignees)
   tasks?: Task[];
+
+  @OneToMany(() => Notification, (notification) => notification.user)
+  notifications?: Notification[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt?: Date;

@@ -10,10 +10,12 @@ import { RolesGuard } from '@common/guards/roles.guard';
 import { Task } from './entities/task.entity';
 import { User } from '@/common/entities/user.entity';
 import { TasksGateway } from './tasks.gateway';
+import { NotificationsModule } from '../notifications/notification.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Task, User]),
+    NotificationsModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],

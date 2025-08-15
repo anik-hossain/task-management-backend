@@ -5,6 +5,7 @@ import { CreateTaskDto } from './dto/create.dto';
 import { Task } from './entities/task.entity';
 import { User } from '@/common/entities/user.entity';
 import { TasksGateway } from './tasks.gateway';
+import { NotificationsService } from '../notifications/notification.service';
 
 @Injectable()
 export class TaskService {
@@ -13,6 +14,7 @@ export class TaskService {
     private tasksRepository: Repository<Task>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    private readonly notificationsService: NotificationsService,
     private readonly tasksGateway: TasksGateway
   ) { }
 
@@ -36,7 +38,15 @@ export class TaskService {
       assignees,
     });
 
-    return this.tasksRepository.save(task);
+    const savedTask = await this.tasksRepository.save(task);
+
+    // Notify assignees
+    for (const assignee of assignees) {
+      await this.notificationsService.create(assignee, {title: task.title, type: 'task'});
+    }
+
+    this.tasksGateway.notifyTaskCreation(savedTask);
+    return savedTask;
   }
 
   // get task by id
@@ -77,7 +87,7 @@ export class TaskService {
     task.status = newStatus as any;
     const updatedTask = await this.tasksRepository.save(task);
 
-    this.tasksGateway.notifyTaskUpdate(taskId, newStatus);
+    this.tasksGateway.notifyTaskUpdate(updatedTask);
     return updatedTask;
   }
 }
