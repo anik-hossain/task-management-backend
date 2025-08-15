@@ -12,11 +12,15 @@ import { User } from '@/common/entities/user.entity';
 import { TasksGateway } from './tasks.gateway';
 import { NotificationsModule } from '../notifications/notification.module';
 import { TaskDependency } from './entities/task-dependencies.entity';
+import { Project } from '../projects/entities/project.entity';
+import { ProjectService } from '../projects/project.service';
+import { ProjectModule } from '../projects/project.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Task, User, TaskDependency]),
+    TypeOrmModule.forFeature([Task, User, TaskDependency, Project]),
     NotificationsModule,
+    ProjectModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],

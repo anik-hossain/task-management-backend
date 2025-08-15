@@ -34,6 +34,13 @@ export class ProjectService {
     return project;
   }
 
+  findTasksByProjID(id: string) {
+    return this.projectRepo.findOne({
+      where: { id: Number(id) },
+      relations: ['tasks', 'tasks.assignee'],
+    });
+  }
+
   findAll() {
     return this.projectRepo.find({ relations: ['owner', 'members'] });
   }

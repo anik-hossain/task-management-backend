@@ -6,64 +6,67 @@ import { Task } from './entities/task.entity';
 import { User } from '@/common/entities/user.entity';
 import { TasksGateway } from './tasks.gateway';
 import { NotificationsService } from '../notifications/notification.service';
+import { ProjectService } from '../projects/project.service';
 
 @Injectable()
 export class TaskService {
-  constructor(
+ constructor(
     @InjectRepository(Task)
-    private tasksRepository: Repository<Task>,
+    private readonly tasksRepository: Repository<Task>,
+
     @InjectRepository(User)
-    private userRepository: Repository<User>,
+    private readonly userRepository: Repository<User>,
+
     private readonly notificationsService: NotificationsService,
+    private readonly projectService: ProjectService,
     private readonly tasksGateway: TasksGateway,
   ) {}
 
   // Get tasks for user
-  async index(projectID: string): Promise<Task[]> {
-    if (projectID == 'undefined') return []
-    return this.tasksRepository.find({
-      where: {  project: {id: Number(projectID)} },
-      relations: ['assignee', 'project'],
-    });
+  async index(projectID: string) {
+    if (projectID === 'undefined') return null;
+
+    return this.projectService.findTasksByProjID(projectID)
   }
+
 
   // Create task
-async create(id: number | string, createDTO: CreateTaskDto): Promise<Task> {
-  const assignee = await this.userRepository.findOne({ where: { id: createDTO.assigneeId } });
-  if (!assignee) throw new NotFoundException(`User with id ${createDTO.assigneeId} not found`);
+  async create(id: number | string, createDTO: CreateTaskDto): Promise<Task> {
+    const assignee = await this.userRepository.findOne({ where: { id: createDTO.assigneeId } });
+    if (!assignee) throw new NotFoundException(`User with id ${createDTO.assigneeId} not found`);
 
-  let dependenciesEntities: any = [];
-  if (createDTO.dependencies && createDTO.dependencies.length) {
-    dependenciesEntities = createDTO.dependencies.map(depId => {
-      return this.tasksRepository.create({
-        id: depId,
-      } as any); // temporary placeholder for relation
+    let dependenciesEntities: any = [];
+    if (createDTO.dependencies && createDTO.dependencies.length) {
+      dependenciesEntities = createDTO.dependencies.map(depId => {
+        return this.tasksRepository.create({
+          id: depId,
+        } as any); // temporary placeholder for relation
+      });
+    }
+
+    const task = this.tasksRepository.create({
+      project: { id: Number(id) },
+      title: createDTO.title,
+      description: createDTO.description,
+      priority: createDTO.priority,
+      startDate: createDTO.startDate,
+      dueDate: createDTO.dueDate,
+      assignee,
+      dependencies: dependenciesEntities,
     });
+
+    const savedTask = await this.tasksRepository.save(task);
+
+    await this.notificationsService.create(assignee, {
+      title: 'New Task Assigned',
+      type: 'task',
+      message: `You have been assigned a new task: ${task.title}`,
+      task: savedTask,
+    });
+
+    this.tasksGateway.notifyTaskCreation(savedTask);
+    return savedTask;
   }
-
-  const task = this.tasksRepository.create({
-    project: { id: Number(id) },
-    title: createDTO.title,
-    description: createDTO.description,
-    priority: createDTO.priority,
-    startDate: createDTO.startDate,
-    dueDate: createDTO.dueDate,
-    assignee,
-    dependencies: dependenciesEntities,
-  });
-
-  const savedTask = await this.tasksRepository.save(task);
-
-  await this.notificationsService.create(assignee, {
-    title: 'New Task Assigned',
-    type: 'task',
-    message: `You have been assigned a new task: ${task.title}`,
-    task: savedTask,
-  });
-
-  this.tasksGateway.notifyTaskCreation(savedTask);
-  return savedTask;
-}
 
 
 
