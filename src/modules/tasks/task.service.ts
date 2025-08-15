@@ -19,19 +19,16 @@ export class TaskService {
   ) {}
 
   // Get tasks for user
-  async index(user: User): Promise<Task[]> {
-    if (['admin', 'manager'].includes(user.role)) {
-      return this.tasksRepository.find({ relations: ['assignee', 'project'] });
-    }
-
+  async index(projectID: string): Promise<Task[]> {
+    if (projectID == 'undefined') return []
     return this.tasksRepository.find({
-      where: { assignee: { id: user.id } },
+      where: {  project: {id: Number(projectID)} },
       relations: ['assignee', 'project'],
     });
   }
 
   // Create task
-async create(createDTO: CreateTaskDto): Promise<Task> {
+async create(id: number | string, createDTO: CreateTaskDto): Promise<Task> {
   const assignee = await this.userRepository.findOne({ where: { id: createDTO.assigneeId } });
   if (!assignee) throw new NotFoundException(`User with id ${createDTO.assigneeId} not found`);
 
@@ -45,6 +42,7 @@ async create(createDTO: CreateTaskDto): Promise<Task> {
   }
 
   const task = this.tasksRepository.create({
+    project: { id: Number(id) },
     title: createDTO.title,
     description: createDTO.description,
     priority: createDTO.priority,

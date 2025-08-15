@@ -25,5 +25,5 @@ export class CreateTaskDto {
   @IsArray()
   @ArrayNotEmpty()
   @IsInt({ each: true })
-  dependencies?: number[]; // array of task IDs
+  dependencies?: number[];
 }

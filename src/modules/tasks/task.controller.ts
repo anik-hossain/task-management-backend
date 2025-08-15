@@ -9,17 +9,17 @@ import { UpdateStatusDto } from './dto/UpdateStatusDto';
 export class TaskController {
   constructor(private taskService: TaskService) {}
 
-  @Get()
+  @Get(':id')
   @UseGuards(JwtAuthGuard)
-  async index(@Req() req) {
+  async index(@Param('id') id: string, @Req() req) {
     // Pass the logged-in user to the service
-    return this.taskService.index(req.user);
+    return this.taskService.index(id);
   }
 
-  @Post()
+  @Post(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  async tasks(@Body() taskDto: CreateTaskDto) {
-    return this.taskService.create(taskDto);
+  async tasks(@Param('id') id: string, @Body() taskDto: CreateTaskDto) {
+    return this.taskService.create(id, taskDto);
   }
 
   @Get(':id')
