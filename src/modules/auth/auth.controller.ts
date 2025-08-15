@@ -12,11 +12,6 @@ import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  @Post('setup-admin')
-  async setupAdmin(@Body() registerDto: RegisterDto) {
-    return this.authService.setupAdmin(registerDto);
-  }
-
   @Post('register')
   // @UseGuards(RolesGuard)
   // @Roles(UserRole.ADMIN)

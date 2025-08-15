@@ -1,27 +1,29 @@
-import { IsString, IsEnum, IsDateString, IsOptional, IsArray, ArrayNotEmpty, IsInt } from 'class-validator';
+import { IsString, IsEnum, IsDateString, IsOptional, IsInt, IsArray, ArrayNotEmpty } from 'class-validator';
 import { Priority } from '../entities/task.entity';
 
 export class CreateTaskDto {
   @IsString()
   title: string;
 
+  @IsOptional()
+  @IsString()
   description?: string;
 
-  @IsArray()
-  @ArrayNotEmpty()
-  @IsInt({ each: true })
-  assignees: number[];
+  @IsInt()
+  assigneeId: number;
 
   @IsEnum(Priority)
   priority: Priority;
 
   @IsDateString()
-  start_date: string;
+  startDate: string;
 
   @IsDateString()
-  end_date: string;
+  dueDate: string;
 
   @IsOptional()
-  @IsString()
-  dependencies?: string;
+  @IsArray()
+  @ArrayNotEmpty()
+  @IsInt({ each: true })
+  dependencies?: number[]; // array of task IDs
 }

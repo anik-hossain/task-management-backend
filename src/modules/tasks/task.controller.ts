@@ -2,7 +2,6 @@ import { Controller, Post, Get, Body, UseGuards, Param, Req, Patch } from '@nest
 import { TaskService } from './task.service';
 import { CreateTaskDto } from './dto/create.dto';
 import { RolesGuard } from '@common/guards/roles.guard';
-import { UserRole } from '@common/entities/user.entity';
 import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
 import { UpdateStatusDto } from './dto/UpdateStatusDto';
 

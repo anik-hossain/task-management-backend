@@ -15,30 +15,9 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async setupAdmin(registerDto: RegisterDto): Promise<User> {
-    const adminCount = await this.usersRepository.count({ where: { role: UserRole.ADMIN } });
-    if (adminCount > 0) {
-      throw new BadRequestException('An admin user already exists');
-    }
 
-    const { email, password, name } = registerDto;
-    const existingUser = await this.usersRepository.findOne({ where: { email } });
-    if (existingUser) {
-      throw new BadRequestException('Email already exists');
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = this.usersRepository.create({
-      email,
-      password: hashedPassword,
-      name,
-      role: UserRole.ADMIN,
-    });
-
-    return this.usersRepository.save(user);
-  }
-
-  async register(registerDto: RegisterDto): Promise<{ accessToken: string, user: User }> {
+  // Register a new member user
+  async register(registerDto: RegisterDto): Promise<{ accessToken: string, user: Partial<User> }> {
     const { email, password, name } = registerDto;
     
     const existingUser = await this.usersRepository.findOne({ where: { email } });
@@ -54,16 +33,22 @@ export class AuthService {
       role: UserRole.MEMBER,
     });
 
-    this.usersRepository.save(user);
+    await this.usersRepository.save(user);
 
     const payload = { sub: user.id, email: user.email, role: user.role };
     const accessToken = this.jwtService.sign(payload);
+
+    // Return only safe user info
     return { accessToken, user: { id: user.id, email: user.email, name: user.name, role: user.role } };
   }
 
-  async login(loginDto: LoginDto): Promise<{ accessToken: string, user: User }> {
+  // Login user
+  async login(loginDto: LoginDto): Promise<{ accessToken: string, user: Partial<User> }> {
     const { email, password } = loginDto;
-    const user = await this.usersRepository.findOne({ where: { email }, select: ['id', 'email', 'name', 'role', 'password'] });
+
+    const user = await this.usersRepository.findOne({
+      where: { email },
+    });
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
       throw new UnauthorizedException('Invalid credentials');
@@ -71,18 +56,19 @@ export class AuthService {
 
     const payload = { sub: user.id, email: user.email, role: user.role };
     const accessToken = this.jwtService.sign(payload);
+
     return { accessToken, user: { id: user.id, email: user.email, name: user.name, role: user.role } };
   }
 
+  // Find user by ID
   async findUserById(id: number): Promise<User> {
     const user = await this.usersRepository.findOne({ where: { id } });
-    if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found`);
-    }
+    if (!user) throw new NotFoundException(`User with ID ${id} not found`);
     return user;
   }
 
-async getLoggedInUser(userId: number): Promise<User> {
+  // Get currently logged in user (by ID)
+  async getLoggedInUser(userId: number): Promise<User> {
     const user = await this.usersRepository.findOne({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');
     return user;

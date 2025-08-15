@@ -5,6 +5,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { TaskModule } from './modules/tasks/task.module';
 import { UserModule } from './modules/users/user.module';
 import { NotificationsModule } from './modules/notifications/notification.module';
+import { ProjectModule } from './modules/projects/project.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { NotificationsModule } from './modules/notifications/notification.module
 
     // Modules
     AuthModule,
+    ProjectModule,
     TaskModule,
     UserModule,
     NotificationsModule

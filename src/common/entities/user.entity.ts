@@ -1,14 +1,8 @@
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { Notification } from '@/modules/notifications/entities/notification.entity';
+import { Project } from '@/modules/projects/entities/project.entity';
 import { Task } from '@/modules/tasks/entities/task.entity';
-
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  OneToMany,
-  CreateDateColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { ProjectMember } from '@/modules/projects/entities/project-member.entity';
 
 export enum UserRole {
   ADMIN = 'admin',
@@ -16,32 +10,35 @@ export enum UserRole {
   MEMBER = 'member',
 }
 
-@Entity()
+@Entity('users')
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column()
+  name: string;
+
   @Column({ unique: true })
   email: string;
 
-  @Column({ select: false })
-  password?: string;
-
   @Column()
-  name: string;
+  password: string;
 
   @Column({ type: 'enum', enum: UserRole, default: UserRole.MEMBER })
   role: UserRole;
 
-  @OneToMany(() => Task, (task) => task.assignees)
-  tasks?: Task[];
+  @Column({ default: true })
+  isActive: boolean;
+
+  @OneToMany(() => Project, (project) => project.owner)
+  ownedProjects: Project[];
+
+  @OneToMany(() => Task, (task) => task.assignee)
+  assignedTasks: Task[];
 
   @OneToMany(() => Notification, (notification) => notification.user)
-  notifications?: Notification[];
+  notifications: Notification[];
 
-  @CreateDateColumn({ name: 'created_at' })
-  createdAt?: Date;
-
-  @UpdateDateColumn({ name: 'updated_at' })
-  updatedAt?: Date;
+  @OneToMany(() => ProjectMember, (pm) => pm.user)
+  projectMemberships: ProjectMember[];
 }

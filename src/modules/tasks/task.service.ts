@@ -15,49 +15,73 @@ export class TaskService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
     private readonly notificationsService: NotificationsService,
-    private readonly tasksGateway: TasksGateway
-  ) { }
+    private readonly tasksGateway: TasksGateway,
+  ) {}
 
+  // Get tasks for user
   async index(user: User): Promise<Task[]> {
     if (['admin', 'manager'].includes(user.role)) {
-      return this.tasksRepository.find({ relations: ['assignees'] });
+      return this.tasksRepository.find({ relations: ['assignee', 'project'] });
     }
 
-    return this.tasksRepository
-      .createQueryBuilder('task')
-      .leftJoinAndSelect('task.assignees', 'assignee')
-      .where('assignee.id = :userId', { userId: user.id })
-      .getMany();
-  }
-
-
-  async create(createDTO: CreateTaskDto): Promise<Task> {
-    const assignees = await this.userRepository.findByIds(createDTO.assignees);
-    const task = this.tasksRepository.create({
-      ...createDTO,
-      assignees,
+    return this.tasksRepository.find({
+      where: { assignee: { id: user.id } },
+      relations: ['assignee', 'project'],
     });
-
-    const savedTask = await this.tasksRepository.save(task);
-
-    // Notify assignees
-    for (const assignee of assignees) {
-      await this.notificationsService.create(assignee, { title: 'New Task Assigned', type: 'task', message: `You have been assigned a new task: ${task.title}`, task: savedTask });
-    }
-
-    this.tasksGateway.notifyTaskCreation(savedTask);
-    return savedTask;
   }
 
-  // get task by id
+  // Create task
+async create(createDTO: CreateTaskDto): Promise<Task> {
+  const assignee = await this.userRepository.findOne({ where: { id: createDTO.assigneeId } });
+  if (!assignee) throw new NotFoundException(`User with id ${createDTO.assigneeId} not found`);
+
+  let dependenciesEntities: any = [];
+  if (createDTO.dependencies && createDTO.dependencies.length) {
+    dependenciesEntities = createDTO.dependencies.map(depId => {
+      return this.tasksRepository.create({
+        id: depId,
+      } as any); // temporary placeholder for relation
+    });
+  }
+
+  const task = this.tasksRepository.create({
+    title: createDTO.title,
+    description: createDTO.description,
+    priority: createDTO.priority,
+    startDate: createDTO.startDate,
+    dueDate: createDTO.dueDate,
+    assignee,
+    dependencies: dependenciesEntities,
+  });
+
+  const savedTask = await this.tasksRepository.save(task);
+
+  await this.notificationsService.create(assignee, {
+    title: 'New Task Assigned',
+    type: 'task',
+    message: `You have been assigned a new task: ${task.title}`,
+    task: savedTask,
+  });
+
+  this.tasksGateway.notifyTaskCreation(savedTask);
+  return savedTask;
+}
+
+
+
+  // Get task by id
   async findById(id: number): Promise<Task> {
-    const task = await this.tasksRepository.findOne({ where: { id }, relations: ['assignees'] });
+    const task = await this.tasksRepository.findOne({
+      where: { id },
+      relations: ['assignee', 'project'],
+    });
     if (!task) {
       throw new NotFoundException(`Task with id ${id} not found`);
     }
     return task;
   }
 
+  // Allowed status transitions based on role
   private allowedTransitions: Record<string, Record<string, string[]>> = {
     admin: {
       pending: ['in-progress', 'completed'],
@@ -76,6 +100,7 @@ export class TaskService {
     },
   };
 
+  // Update task status
   async updateStatus(user: User, taskId: number, newStatus: string): Promise<Task> {
     const task = await this.findById(taskId);
 
@@ -87,9 +112,9 @@ export class TaskService {
     task.status = newStatus as any;
     const updatedTask = await this.tasksRepository.save(task);
 
-    // Notify assignees about the status update
-    for (const assignee of task.assignees) {
-      await this.notificationsService.create(assignee, {
+    // Notify assignee about status update
+    if (task.assignee) {
+      await this.notificationsService.create(task.assignee, {
         title: `Task status updated`,
         type: 'task',
         message: `The status of task "${task.title}" has been updated to "${newStatus}".`,

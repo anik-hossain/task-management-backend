@@ -1,13 +1,8 @@
 import { User } from '@/common/entities/user.entity';
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  ManyToMany,
-  JoinTable,
-  CreateDateColumn,
-  UpdateDateColumn
-} from 'typeorm';
+import { Project } from '@/modules/projects/entities/project.entity';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, JoinTable, ManyToMany } from 'typeorm';
+import { TaskDependency } from './task-dependencies.entity';
+
 
 export enum Priority {
   LOW = 'low',
@@ -21,39 +16,35 @@ export enum TaskStatus {
   COMPLETED = 'completed',
 }
 
-@Entity()
+@Entity('tasks')
 export class Task {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @ManyToOne(() => Project, (project) => project.tasks, { onDelete: 'CASCADE' })
+  project: Project;
+
   @Column()
   title: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'text' })
   description: string;
 
-  @ManyToMany(() => User, (user) => user.tasks)
-  @JoinTable()
-  assignees: User[];
-
-  @Column({ type: 'enum', enum: TaskStatus, default: TaskStatus.PENDING })
+ @Column({ type: 'enum', enum: TaskStatus, default: TaskStatus.PENDING })
   status: TaskStatus;
 
   @Column({ type: 'enum', enum: Priority, default: Priority.LOW })
   priority: Priority;
 
-  @Column()
-  start_date: string;
+  @ManyToOne(() => User, (user) => user.assignedTasks, { nullable: true })
+  assignee: User;
 
-  @Column()
-  end_date: string;
+  @Column({ nullable: true, type: 'date' })
+  startDate: string;
 
-  @Column({ nullable: true })
-  dependencies: string;
+  @Column({ nullable: true, type: 'date' })
+  dueDate: string;
 
-  @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date;
-
-  @UpdateDateColumn({ name: 'updated_at' })
-  updatedAt: Date;
+  @OneToMany(() => TaskDependency, (dependency) => dependency.task)
+  dependencies: TaskDependency[];
 }
