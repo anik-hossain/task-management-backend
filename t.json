@@ -1,0 +1,24 @@
+[
+    {
+        "id": 1,
+        "name": "TaskSphere",
+        "description": "TaskSphere is a collaborative task and project management platform designed for teams to plan, track, and execute work efficiently. Featuring real-time updates, interactive Gantt charts, and integrated notifications, it helps teams stay aligned, meet deadlines, and boost productivity.",
+        "owner": {
+            "id": 1,
+            "name": "Anik Hossain",
+            "email": "anik.wdev@gmail.com",
+            "password": "$2b$10$JQ.EkRRkiIoDXJLw6gHnEOMApnRyNWQLAvqtl6yI5EpenXWIqJv8u",
+            "role": "admin",
+            "isActive": true
+        },
+        "status": "active",
+        "startDate": null,
+        "endDate": null,
+        "members": [
+            {
+                "id": 1,
+                "role": "admin"
+            }
+        ]
+    }
+]

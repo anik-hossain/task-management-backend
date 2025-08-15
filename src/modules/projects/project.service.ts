@@ -16,11 +16,11 @@ export class ProjectService {
     private readonly projectMemberRepo: Repository<ProjectMember>,
   ) {}
 
-  async createProject(ownerId: number, name: string, description?: string) {
+  async createProject(ownerId: number, name: string, startDate: string, endDate: string, description?: string) {
     const owner = await this.userRepo.findOne({ where: { id: ownerId } });
     if (!owner) throw new NotFoundException('Owner not found');
 
-    const project = this.projectRepo.create({ name, description, owner });
+    const project = this.projectRepo.create({ name, description, owner, startDate, endDate: endDate });
     await this.projectRepo.save(project);
 
     // Add owner as a member

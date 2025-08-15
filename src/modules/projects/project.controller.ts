@@ -7,8 +7,8 @@ export class ProjectController {
   constructor(private readonly projectService: ProjectService) {}
 
   @Post()
-  create(@Body() body: { ownerId: number; name: string; description?: string }) {
-    return this.projectService.createProject(body.ownerId, body.name, body.description);
+  create(@Body() body: { ownerId: number; name: string; description?: string, startDate: string, endDate: string }) {
+    return this.projectService.createProject(body.ownerId, body.name, body.startDate, body.endDate, body.description);
   }
 
   @Get()
