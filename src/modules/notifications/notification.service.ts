@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Notification } from './entities/notification.entity';
 import { Repository } from 'typeorm';
 import { User } from '@/common/entities/user.entity';
+import { Task } from '../tasks/entities/task.entity';
 
 @Injectable()
 export class NotificationsService {
@@ -18,9 +19,9 @@ export class NotificationsService {
         });
     }
 
-    async markAsRead(id: number, userId: number) {
+    async markAsRead(id: string, userId: number) {
         const notification = await this.notificationRepo.findOne({
-            where: { id },
+            where: { id: Number(id) },
             relations: ['user'],
         });
         if (!notification) throw new NotFoundException('Notification not found');
@@ -31,9 +32,9 @@ export class NotificationsService {
         return this.notificationRepo.save(notification);
     }
 
-    async remove(id: number, userId: number) {
+    async remove(id: string, userId: number) {
         const notification = await this.notificationRepo.findOne({
-            where: { id },
+            where: { id: Number(id) },
             relations: ['user'],
         });
         if (!notification) throw new NotFoundException('Notification not found');
@@ -44,20 +45,14 @@ export class NotificationsService {
         return { message: 'Notification deleted' };
     }
 
-    //   await this.notificationsService.save({
-    //         user: assignee,
-    //         title: 'New Task Assigned',
-    //         message: `You have been assigned a new task: ${task.title}`,
-    //         type: 'task',
-    //       });
-
     // Utility: Create notification
-    async create(userId: User, task: { title: string, type: string }) {
+    async create(userId: User, task: { title: string, type: string, message: string, task: Task }) {
         const notification = this.notificationRepo.save({
-            title: 'New Task Assigned',
-            message: `You have been assigned a new task: ${task.title}`,
+            title: task.title,
+            message: task.message,
             type: task.type,
             user: userId,
+            task: task.task,
         });
         return notification
     }

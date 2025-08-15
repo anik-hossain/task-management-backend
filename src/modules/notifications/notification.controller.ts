@@ -24,13 +24,13 @@ export class NotificationsController {
 
   // Mark a notification as read
   @Patch(':id/read')
-  async markAsRead(@Param('id') id: number, @GetUser() user: User) {
+  async markAsRead(@Param('id') id: string, @GetUser() user: User) {
     return this.notificationsService.markAsRead(id, user.id);
   }
 
   // Delete a notification
   @Delete(':id')
-  async remove(@Param('id') id: number, @GetUser() user: User) {
+  async remove(@Param('id') id: string, @GetUser() user: User) {
     return this.notificationsService.remove(id, user.id);
   }
 }

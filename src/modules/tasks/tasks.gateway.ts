@@ -32,10 +32,7 @@ export class TasksGateway implements OnGatewayConnection {
   notifyTaskUpdate(task: any): void {
     if (task.assignees?.length) {
       task.assignees.forEach((assignee: any) => {
-        this.server.to(`user_${assignee.id}`).emit('taskUpdated', {
-          taskId: task.id,
-          status: task.status,
-        });
+        this.server.to(`user_${assignee.id}`).emit('taskUpdated', task);
       });
     }
   }

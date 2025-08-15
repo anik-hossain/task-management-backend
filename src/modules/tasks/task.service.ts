@@ -42,7 +42,7 @@ export class TaskService {
 
     // Notify assignees
     for (const assignee of assignees) {
-      await this.notificationsService.create(assignee, {title: task.title, type: 'task'});
+      await this.notificationsService.create(assignee, { title: 'New Task Assigned', type: 'task', message: `You have been assigned a new task: ${task.title}`, task: savedTask });
     }
 
     this.tasksGateway.notifyTaskCreation(savedTask);
@@ -58,7 +58,7 @@ export class TaskService {
     return task;
   }
 
-   private allowedTransitions: Record<string, Record<string, string[]>> = {
+  private allowedTransitions: Record<string, Record<string, string[]>> = {
     admin: {
       pending: ['in-progress', 'completed'],
       'in-progress': ['pending', 'completed'],
@@ -86,6 +86,16 @@ export class TaskService {
 
     task.status = newStatus as any;
     const updatedTask = await this.tasksRepository.save(task);
+
+    // Notify assignees about the status update
+    for (const assignee of task.assignees) {
+      await this.notificationsService.create(assignee, {
+        title: `Task status updated`,
+        type: 'task',
+        message: `The status of task "${task.title}" has been updated to "${newStatus}".`,
+        task: updatedTask,
+      });
+    }
 
     this.tasksGateway.notifyTaskUpdate(updatedTask);
     return updatedTask;
