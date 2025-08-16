@@ -92,24 +92,28 @@ export class ProjectService {
     if (user.role === 'admin' || user.role === 'manager') {
       // Admin & Manager -> see all projects
       projects = await this.projectRepo.find({
-        relations: ['owner', 'members'],
+        relations: ['owner', 'members.user'],
       });
     } else {
       // Associate -> only see projects where they're a member
       projects = await this.projectRepo.find({
         where: { members: { user: user } },
-        relations: ['owner', 'members'],
+        relations: ['owner', 'members.user'],
       });
     }
 
-    return projects.length > 0 ? projects : [];
+    if (!projects || projects.length === 0) return [];
+
+    // Map members to just User objects
+    return projects.map(project => ({
+      ...project,
+      members: project.members.map(m => m.user),
+    }));
   }
 
 
+
   findOne(id: number) {
-    console.log('================ff====================');
-    console.log('find projs by id');
-    console.log('====================================');
     return this.projectRepo.findOne({
       where: { id },
       relations: ['owner', 'members', 'tasks'],
@@ -117,12 +121,54 @@ export class ProjectService {
   }
 
   async update(id: number, data: Partial<Project>) {
-    const project = await this.projectRepo.findOne({ where: { id } });
+    // Load project with members and owner
+    const project = await this.projectRepo.findOne({
+      where: { id },
+      relations: ['members', 'owner', 'tasks'],
+    });
     if (!project) throw new NotFoundException('Project not found');
 
+    // Update project fields
     Object.assign(project, data);
-    return this.projectRepo.save(project);
+    const updatedProject = await this.projectRepo.save(project);
+
+    // Update members if provided and owner exists
+    if (data.members && project.owner) {
+      const ownerId = project.owner.id;
+
+      // Remove old members except the owner
+      // @ts-ignore
+      const oldMemberIds = project.members.filter(memberId => memberId !== ownerId);
+      if (oldMemberIds.length) {
+        const oldMembers = await this.projectMemberRepo.findByIds(oldMemberIds);
+        await this.projectMemberRepo.remove(oldMembers);
+      }
+
+      // Add new members, excluding owner
+      // @ts-ignore
+      const newMemberIds = data.members.filter(id => id !== ownerId);
+      if (newMemberIds.length) {
+        const memberEntities = await this.userRepo.findByIds(newMemberIds);
+        const memberships = memberEntities.map(user =>
+          this.projectMemberRepo.create({
+            project: updatedProject,
+            user,
+            role: 'member',
+          }),
+        );
+        await this.projectMemberRepo.save(memberships);
+      }
+    }
+
+    // Reload project with members, tasks, owner for frontend
+    const projectWithMembers = await this.projectRepo.findOne({
+      where: { id },
+      relations: ['members', 'owner', 'tasks'],
+    });
+
+    return projectWithMembers;
   }
+
 
   async remove(id: number) {
     const project = await this.projectRepo.findOne({ where: { id } });
