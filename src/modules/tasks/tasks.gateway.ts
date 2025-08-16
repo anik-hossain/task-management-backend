@@ -21,19 +21,15 @@ export class TasksGateway implements OnGatewayConnection {
 
   // Notify only assignees when a task is created
   notifyTaskCreation(task: any): void {
-    if (task.assignees?.length) {
-      task.assignees.forEach((assignee: any) => {
-        this.server.to(`user_${assignee.id}`).emit('taskCreated', task);
-      });
+    if (task.assignee) {
+      this.server.to(`user_${task?.assignee?.id}`).emit('taskCreated', task);
     }
   }
 
   // Notify only assignees when a task is updated
   notifyTaskUpdate(task: any): void {
-    if (task.assignees?.length) {
-      task.assignees.forEach((assignee: any) => {
-        this.server.to(`user_${assignee.id}`).emit('taskUpdated', task);
-      });
+    if (task.assignee) {
+      this.server.to(`user_${task?.assignee?.id}`).emit('taskUpdated', task);
     }
   }
 }

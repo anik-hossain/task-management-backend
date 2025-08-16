@@ -21,7 +21,7 @@ export class TaskController {
     return this.taskService.create(id, taskDto);
   }
 
-  @Get(':id')
+  @Get('task/:id')
   @UseGuards(JwtAuthGuard)
   async findById(@Param('id') id: number) {
     return this.taskService.findById(id);

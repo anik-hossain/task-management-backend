@@ -17,7 +17,7 @@ export class Project {
   @ManyToOne(() => User, (user) => user.ownedProjects, { nullable: true })
   owner: User;
 
-  @Column({ default: 'active' })
+  @Column({ default: 'pending' })
   status: string;
   @Column({ nullable: true, type: 'date' })
   startDate: string;

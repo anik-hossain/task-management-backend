@@ -73,7 +73,7 @@ export class TaskService {
   // Get task by id
   async findById(id: number): Promise<Task> {
     const task = await this.tasksRepository.findOne({
-      where: { id },
+      where: { id: Number(id) },
       relations: ['assignee', 'project'],
     });
     if (!task) {
