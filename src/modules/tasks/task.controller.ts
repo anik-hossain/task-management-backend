@@ -12,7 +12,6 @@ export class TaskController {
   @Get(':id')
   @UseGuards(JwtAuthGuard)
   async index(@Param('id') id: string, @Req() req) {
-    // Pass the logged-in user to the service
     return this.taskService.index(id);
   }
 

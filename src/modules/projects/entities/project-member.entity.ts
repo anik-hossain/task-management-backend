@@ -15,5 +15,5 @@ export class ProjectMember {
   user: User;
 
   @Column({ default: 'member' })
-  role: string; // admin, manager, member
+  role: string;
 }

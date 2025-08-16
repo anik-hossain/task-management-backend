@@ -14,25 +14,54 @@ export class ProjectService {
     private readonly userRepo: Repository<User>,
     @InjectRepository(ProjectMember)
     private readonly projectMemberRepo: Repository<ProjectMember>,
-  ) {}
+  ) { }
 
-  async createProject(ownerId: number, name: string, startDate: string, endDate: string, description?: string) {
+  async createProject(
+    ownerId: number,
+    name: string,
+    startDate: string,
+    endDate: string,
+    members: number[],
+    description?: string,
+  ) {
     const owner = await this.userRepo.findOne({ where: { id: ownerId } });
     if (!owner) throw new NotFoundException('Owner not found');
 
-    const project = this.projectRepo.create({ name, description, owner, startDate, endDate: endDate });
+    const project = this.projectRepo.create({
+      name,
+      description,
+      owner,
+      startDate,
+      endDate,
+    });
+
     await this.projectRepo.save(project);
 
-    // Add owner as a member
-    const membership = this.projectMemberRepo.create({
+    // Add owner as admin
+    const ownerMembership = this.projectMemberRepo.create({
       project,
       user: owner,
       role: 'admin',
     });
-    await this.projectMemberRepo.save(membership);
+    await this.projectMemberRepo.save(ownerMembership);
+
+    // Add other members (if any)
+    if (members.length) {
+      const memberEntities = await this.userRepo.findByIds(members);
+      const memberships = memberEntities.map((user) =>
+        this.projectMemberRepo.create({
+          project,
+          user,
+          role: 'member',
+        }),
+      );
+      await this.projectMemberRepo.save(memberships);
+    }
 
     return project;
   }
+
+
 
   findTasksByProjID(id: string) {
     return this.projectRepo.findOne({
@@ -41,12 +70,28 @@ export class ProjectService {
     });
   }
 
-  findAll() {
-    return this.projectRepo.find({ relations: ['owner', 'members'] });
+  async findAll(user: User) {
+    let projects;
+
+    if (user.role === 'admin' || user.role === 'manager') {
+      // Admin & Manager -> see all projects
+      projects = await this.projectRepo.find({
+        relations: ['owner', 'members'],
+      });
+    } else {
+      // Associate -> only see projects where they're a member
+      projects = await this.projectRepo.find({
+        where: { members: { user: user } },
+        relations: ['owner', 'members'],
+      });
+    }
+
+    return projects.length > 0 ? projects : [];
   }
 
+
   findOne(id: number) {
-    return this.projectRepo.findOne({ 
+    return this.projectRepo.findOne({
       where: { id },
       relations: ['owner', 'members', 'tasks'],
     });
