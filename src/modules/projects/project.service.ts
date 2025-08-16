@@ -63,12 +63,28 @@ export class ProjectService {
 
 
 
-  findTasksByProjID(id: string) {
-    return this.projectRepo.findOne({
+  async findTasksByProjID(id: string) {
+    const project = await this.projectRepo.findOne({
       where: { id: Number(id) },
-      relations: ['tasks', 'tasks.assignee'],
+      relations: ['tasks', 'tasks.assignee', 'members.user'],
     });
+
+    if (!project) return null;
+
+    const members = project.members.map((m) => m.user);
+
+    return {
+      id: project.id,
+      name: project.name,
+      description: project.description,
+      startDate: project.startDate,
+      endDate: project.endDate,
+      status: project.status,
+      tasks: project.tasks,
+      members,
+    };
   }
+
 
   async findAll(user: User) {
     let projects;
@@ -91,6 +107,9 @@ export class ProjectService {
 
 
   findOne(id: number) {
+    console.log('================ff====================');
+    console.log('find projs by id');
+    console.log('====================================');
     return this.projectRepo.findOne({
       where: { id },
       relations: ['owner', 'members', 'tasks'],
