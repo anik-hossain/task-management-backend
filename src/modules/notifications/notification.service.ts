@@ -46,7 +46,7 @@ export class NotificationsService {
     }
 
     // Utility: Create notification
-    async create(userId: User, task: { title: string, type: string, message: string, task: Task }) {
+    async create(userId: User, task: { title: string, type: string, message: string, task?: Task }) {
         const notification = this.notificationRepo.save({
             title: task.title,
             message: task.message,

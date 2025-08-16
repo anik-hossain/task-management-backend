@@ -6,7 +6,7 @@ import {
 import { Server, Socket } from 'socket.io';
 
 @WebSocketGateway({ cors: { origin: '*' } })
-export class TasksGateway implements OnGatewayConnection {
+export class NotificationGateway implements OnGatewayConnection {
   @WebSocketServer()
   server: Server;
 
@@ -32,4 +32,15 @@ export class TasksGateway implements OnGatewayConnection {
       this.server.to(`user_${task?.assignee?.id}`).emit('taskUpdated', task);
     }
   }
+
+  notifyProjectCreation({ users, project }: { users: any[], project: any }): void {
+    if (users.length) {
+      users.forEach(member => {
+        if (member.id) {
+          this.server.to(`user_${member.id}`).emit('projectCreated', project);
+        }
+      });
+    }
+  }
+
 }

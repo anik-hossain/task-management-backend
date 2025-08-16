@@ -4,17 +4,28 @@ import { Repository } from 'typeorm';
 import { Project } from './entities/project.entity';;
 import { ProjectMember } from './entities/project-member.entity';
 import { User } from '@/common/entities/user.entity';
+import { NotificationGateway } from '@/common/index.gateway';
+import { NotificationsService } from '../notifications/notification.service';
 
 @Injectable()
 export class ProjectService {
   constructor(
     @InjectRepository(Project)
     private readonly projectRepo: Repository<Project>,
+
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
+
     @InjectRepository(ProjectMember)
     private readonly projectMemberRepo: Repository<ProjectMember>,
+
+    private readonly notificationsService: NotificationsService,
+
+    private readonly projectsGateway: NotificationGateway,
   ) { }
+
+
+
 
   async createProject(
     ownerId: number,
@@ -45,9 +56,10 @@ export class ProjectService {
     });
     await this.projectMemberRepo.save(ownerMembership);
 
-    // Add other members (if any)
+    // Add other members
+    let memberEntities: typeof owner[] = [];
     if (members.length) {
-      const memberEntities = await this.userRepo.findByIds(members);
+      memberEntities = await this.userRepo.findByIds(members);
       const memberships = memberEntities.map((user) =>
         this.projectMemberRepo.create({
           project,
@@ -58,8 +70,20 @@ export class ProjectService {
       await this.projectMemberRepo.save(memberships);
     }
 
+    const allMembers = [owner, ...memberEntities];
+    allMembers.forEach(async (user) => {
+      await this.notificationsService.create(user, {
+        title: `You have been added to project`,
+        type: 'project',
+        message: `You have been added to project "${project.name}"`,
+      });
+    });
+
+    this.projectsGateway.notifyProjectCreation({ users: allMembers, project });
+
     return project;
   }
+
 
 
 

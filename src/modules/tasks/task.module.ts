@@ -9,11 +9,10 @@ import { JwtStrategy } from '@common/strategies/jwt.strategy';
 import { RolesGuard } from '@common/guards/roles.guard';
 import { Task } from './entities/task.entity';
 import { User } from '@/common/entities/user.entity';
-import { TasksGateway } from './tasks.gateway';
+import { NotificationGateway } from '../../common/index.gateway';
 import { NotificationsModule } from '../notifications/notification.module';
 import { TaskDependency } from './entities/task-dependencies.entity';
 import { Project } from '../projects/entities/project.entity';
-import { ProjectService } from '../projects/project.service';
 import { ProjectModule } from '../projects/project.module';
 
 @Module({
@@ -33,7 +32,7 @@ import { ProjectModule } from '../projects/project.module';
     ConfigModule,
   ],
   controllers: [TaskController],
-  providers: [TaskService, JwtStrategy, RolesGuard, TasksGateway],
+  providers: [TaskService, JwtStrategy, RolesGuard, NotificationGateway],
   exports: [TaskService, JwtStrategy, RolesGuard],
 })
 export class TaskModule {}

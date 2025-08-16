@@ -4,9 +4,9 @@ import { Repository } from 'typeorm';
 import { CreateTaskDto } from './dto/create.dto';
 import { Task } from './entities/task.entity';
 import { User } from '@/common/entities/user.entity';
-import { TasksGateway } from './tasks.gateway';
 import { NotificationsService } from '../notifications/notification.service';
 import { ProjectService } from '../projects/project.service';
+import { NotificationGateway } from '@/common/index.gateway';
 
 @Injectable()
 export class TaskService {
@@ -19,7 +19,7 @@ export class TaskService {
 
     private readonly notificationsService: NotificationsService,
     private readonly projectService: ProjectService,
-    private readonly tasksGateway: TasksGateway,
+    private readonly tasksGateway: NotificationGateway,
   ) {}
 
   // Get tasks for user

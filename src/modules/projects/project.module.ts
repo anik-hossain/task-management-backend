@@ -5,11 +5,16 @@ import { ProjectController } from './project.controller';
 import { Project } from './entities/project.entity';
 import { ProjectMember } from './entities/project-member.entity';
 import { User } from '@/common/entities/user.entity';
+import { NotificationGateway } from '@/common/index.gateway';
+import { NotificationsModule } from '../notifications/notification.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Project, User, ProjectMember])],
-  providers: [ProjectService],
+  imports: [
+    TypeOrmModule.forFeature([Project, User, ProjectMember]),
+    NotificationsModule,
+  ],
+  providers: [ProjectService, NotificationGateway],
   controllers: [ProjectController],
-  exports: [ProjectService, ProjectModule],
+  exports: [ProjectService],
 })
 export class ProjectModule {}
